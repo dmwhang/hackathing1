@@ -16,8 +16,8 @@ import io
 app = Flask(__name__)
 
 # webcam camera
-camera = cv2.VideoCapture(0)
-# camera = cv2.VideoCapture("rtsp://admin:admin@172.24.28.36/11")
+# camera = cv2.VideoCapture(0)
+camera = cv2.VideoCapture("rtsp://admin:admin@172.24.28.36/11")
 
 # pretrained small yolo model
 model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
@@ -92,7 +92,7 @@ def yolo_frames():
             results.print()
             object_classes = new_stdout.getvalue()
             sys.stdout = old_stdout
-            print("oc,", object_classes)
+            print("Output from YOLO:", object_classes)
 
             # get PIL image with bounding boxes drawn
             yolo_output = yolo_draw_boxes(results)
@@ -108,72 +108,6 @@ def yolo_frames():
         
         counter += 1
 
-
-
-
-# # duplicated version of gen_frames with security camera feed
-# def sc_gen_frames():  
-#     while True:
-#         success, frame = security_camera.read()  # read the camera frame
-        
-
-#         if not success:
-#             break
-        
-#         else:
-#             ret, buffer = cv2.imencode('.jpg', frame)
-#             frame = buffer.tobytes()
-#             # print("g", type(frame))
-#             yield (b'--frame\r\n'
-#                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')  # concat frame one by one and show result
-
-# # duplicated version of yolo_frames with security camera feed
-# def sc_yolo_frames():
-#     counter = 0
-#     object_classes = ""
-
-#     while True:
-#         success, frame = security_camera.read()  # read the camera frame
-
-#         if not success:
-#             break
-        
-#         elif counter % yolo_refresh_rate == 5:
-#             counter = 0
-    
-#             # save image for classification 
-#             yolo_image = frame
-    
-#             # classify image
-#             results = model([yolo_image])
-
-#             # used to store the output of which objects are seen
-#             # this will be fed to the the backend
-#             old_stdout = sys.stdout
-#             new_stdout = io.StringIO()
-#             sys.stdout = new_stdout
-#             results.print()
-#             object_classes = new_stdout.getvalue()
-#             sys.stdout = old_stdout
-#             print("oc,", object_classes)
-
-#             # get PIL image with bounding boxes drawn
-#             yolo_output = yolo_draw_boxes(results)
-
-#             # stores PIL image as buffer to be passed to front end
-#             buf = io.BytesIO()
-#             yolo_output.save(buf, format='JPEG')
-#             byte_im = buf.getvalue()
-
-#             yield (b'--frame\r\n'
-#                 b'Content-Type: image/jpeg\r\n\r\n' + byte_im + b'\r\n')  # concat frame one by one and show result
-#             # yield (results.print())  # concat frame one by one and show result
-        
-#         counter += 1
-
-
-
-        
 # set html as the template
 @app.route('/')
 def index():
@@ -188,16 +122,6 @@ def video_feed():
 @app.route('/object_classifier')
 def object_classifier():
     return Response(yolo_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# # show live video feed
-# @app.route('/sc_video_feed')
-# def sc_video_feed():
-#     return Response(sc_gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-# # show bounding boxes drawn on live feed
-# @app.route('/sc_object_classifier')
-# def sc_object_classifier():
-#     return Response(sc_yolo_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
     app.run(debug=True)
