@@ -23,8 +23,8 @@ Then navigate to `http://127.0.0.1:5000/` to view the application.
 Note, in order to use a webcam instead of the security camera that is set up, uncomment line 19 and comment out line 20
 
 ```
-# camera = cv2.VideoCapture(0)
-camera = cv2.VideoCapture("rtsp://admin:admin@172.24.28.36/11")
+19 # camera = cv2.VideoCapture(0)
+20 camera = cv2.VideoCapture("rtsp://admin:admin@172.24.28.36/11")
 ```
 
 ## Example output
